@@ -1,0 +1,34 @@
+gi-platform/
+│
+├── server.ts
+├── types.ts
+│
+├── gi-core/
+│   └── core.ts
+│
+├── gi-access/
+│   └── access.ts
+│
+├── gi-router/
+│   └── router.ts
+│
+├── gi-guardian/
+│   └── guardian.ts
+│
+├── gi-sensory/
+│   └── sensory.ts
+│
+├── gi-actions/
+│   └── actions.ts
+│
+├── gi-voices/
+│   └── voices.ts
+│
+├── gi-language/
+│   └── language.ts
+│
+├── gi-logs/
+│   └── logs.ts
+│
+└── gi-shield/
+    └── shield.ts
