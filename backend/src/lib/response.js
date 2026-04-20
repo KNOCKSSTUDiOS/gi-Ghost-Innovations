@@ -1,7 +1,6 @@
-export const send = (res, payload = {}, status = 200) => {
+export const send = (res, data, status = 200) => {
   res.status(status).json({
-    ok: status >= 200 && status < 300,
-    ...payload,
-    timestamp: Date.now()
+    success: status >= 200 && status < 300,
+    data
   });
-
+};
