@@ -1,11 +1,13 @@
 import express from "express";
-import { logger } from "./middleware/logger.js";
-import router from "./routes.js";
+import cors from "cors";
+import routes from "./routes.js";
+import { errorHandler } from "./errors/errorHandler.js";
 
 const app = express();
 
+app.use(cors());
 app.use(express.json());
-app.use(logger);
-app.use("/api", router);
+app.use("/api", routes);
+app.use(errorHandler);
 
 export default app;
