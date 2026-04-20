@@ -18,6 +18,7 @@ export default function CreatorPanel() {
     <div className="creator-panel">
       <div className="creator-header">
         <h2>{project.name}</h2>
+
         <div className="creator-tabs">
           <button onClick={() => setView("scenes")}>Scenes</button>
           <button onClick={() => setView("timeline")}>Timeline</button>
@@ -27,12 +28,22 @@ export default function CreatorPanel() {
       </div>
 
       <div className="creator-body">
-        {view === "scenes" && <SceneList project={project} onSelect={setScene} />}
-        {view === "timeline" && <Timeline project={project} />}
-        {view === "assets" && <AssetManager project={project} />}
-        {view === "script" && <ScriptEditor project={project} scene={scene} />}
+        {view === "scenes" && (
+          <SceneList project={project} onSelect={setScene} />
+        )}
+
+        {view === "timeline" && (
+          <Timeline project={project} />
+        )}
+
+        {view === "assets" && (
+          <AssetManager project={project} />
+        )}
+
+        {view === "script" && (
+          <ScriptEditor project={project} scene={scene} />
+        )}
       </div>
     </div>
   );
 }
-
