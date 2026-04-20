@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>G.I. Web Client</title>
+  <style>
+    body {
+      background: #0d0d0d;
+      color: white;
+      font-family: Arial, sans-serif;
+      padding: 20px;
+    }
+    #log {
+      border: 1px solid #333;
+      padding: 15px;
+      height: 400px;
+      overflow-y: auto;
+      background: #111;
+      margin-bottom: 20px;
+    }
+    #inputBox {
+      width: 80%;
+      padding: 10px;
+      font-size: 16px;
+    }
+    #sendBtn {
+      padding: 10px 20px;
+      font-size: 16px;
+      background: #444;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+    #sendBtn:hover {
+      background: #666;
+    }
+  </style>
+</head>
+<body>
+
+  <h1>G.I. Web Client</h1>
+
+  <div id="log"></div>
+
+  <input id="inputBox" placeholder="Type a message..." />
+  <button id="sendBtn">Send</button>
+
+  <script type="module">
+    import { GI } from "../sdk/gi-sdk.js";
+
+    const gi = new GI({
+      endpoint: "http://localhost:3000",
+      engine_id: "gi-web",
+      user_id: "web-user-1",
+      context: { mode: "assist", voice: "GI_ALPHA" }
+    });
+
+    const log = document.getElementById("log");
+    const input = document.getElementById("inputBox");
+    const sendBtn = document.getElementById("sendBtn");
+
+    function append(text) {
+      const div = document.createElement("div");
+      div.innerText = text;
+      log.appendChild(div);
+      log.scrollTop = log.scrollHeight;
+    }
+
+    sendBtn.onclick = async () => {
+      const msg = input.value.trim();
+      if (!msg) return;
+
+      append("YOU: " + msg);
+      input.value = "";
+
+      const res = await gi.send(msg);
+
+      append("G.I.: " + res.gi_reply);
+
+      if (res.gi_actions.length > 0) {
+        append("ACTIONS:");
+        res.gi_actions.forEach(a => {
+          append(" - " + a.type + " (" + (a.label || a.id || "") + ")");
+        });
+      }
+    };
+  </script>
+
+</body>
+</html>
+
