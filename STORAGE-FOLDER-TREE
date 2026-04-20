@@ -1,0 +1,12 @@
+storage/
+│
+├── <user_id>/
+│   ├── file1.png
+│   ├── file2.mp4
+│   └── ...
+│
+└── <user_id>/<project>/
+    ├── asset1.jpg
+    ├── blueprint.json
+    └── ...
+
