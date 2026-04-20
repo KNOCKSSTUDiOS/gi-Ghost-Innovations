@@ -1,0 +1,39 @@
+# 1. Update server
+sudo apt update && sudo apt upgrade -y
+
+# 2. Install Node + NPM
+curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+sudo apt install -y nodejs
+
+# 3. Install PM2
+sudo npm install -g pm2
+
+# 4. Clone your repo
+git clone <YOUR_REPO_URL>
+cd gi-platform
+
+# 5. Install dependencies
+npm install
+
+# 6. Build TypeScript
+npm run build
+
+# 7. Start with PM2
+pm2 start ecosystem.config.js
+pm2 save
+pm2 startup
+
+# 8. Install Nginx
+sudo apt install nginx -y
+
+# 9. Enable your site config
+sudo ln -s /etc/nginx/sites-available/gi-platform /etc/nginx/sites-enabled/
+sudo nginx -t
+sudo systemctl restart nginx
+
+# 10. Install SSL
+sudo certbot --nginx -d hollywoodimaging.studio -d www.hollywoodimaging.studio
+
+# 11. Reload everything
+sudo systemctl reload nginx
+pm2 restart all
