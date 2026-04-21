@@ -1,17 +1,16 @@
-export function randomInt(min = 0, max = 1) {
+export function int(min = 0, max = 100) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-export function randomId(length = 16) {
-  const chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-  let out = "";
-  for (let i = 0; i < length; i++) {
-    out += chars.charAt(Math.floor(Math.random() * chars.length));
+export function range(count = 1, min = 0, max = 100) {
+  const arr = [];
+  for (let i = 0; i < count; i++) {
+    arr.push(int(min, max));
   }
-  return out;
+  return arr;
 }
 
-export function pick(arr = []) {
-  if (!arr.length) return null;
-  return arr[Math.floor(Math.random() * arr.length)];
+export function pick(list = []) {
+  if (!Array.isArray(list) || list.length === 0) return null;
+  return list[int(0, list.length - 1)];
 }
