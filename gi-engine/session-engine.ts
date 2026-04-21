@@ -1,87 +1,88 @@
+import crypto from "crypto";
+import { GI_CachePersistEngine } from "./cache-persist-engine";
+
 export interface GISessionData {
   id: string;
-  userId: string | null;
-  rank: string;
+  userId?: string;
   createdAt: number;
   updatedAt: number;
-  expiresAt: number;
+  expiresAt: number | null;
   data: Record<string, any>;
 }
 
 export interface GISessionConfig {
   ttl?: number;
+  namespace?: string;
 }
 
 export class GI_SessionEngine {
-  store: Map<string, GISessionData>;
-  ttl: number;
+  private store: GI_CachePersistEngine;
+  private ttl: number;
 
-  constructor(config: GISessionConfig = {}) {
-    this.store = new Map();
-    this.ttl = config.ttl || 1000 * 60 * 60 * 24; // 24h
+  constructor(store: GI_CachePersistEngine, config: GISessionConfig = {}) {
+    this.store = store;
+    this.ttl = config.ttl ?? 1000 * 60 * 60 * 24; // 24h
   }
 
-  create(userId: string | null = null, rank: string = "guest") {
+  private key(id: string) {
+    return `session:${id}`;
+  }
+
+  create(userId?: string): GISessionData {
     const id = crypto.randomUUID();
     const now = Date.now();
-
     const session: GISessionData = {
       id,
       userId,
-      rank,
       createdAt: now,
       updatedAt: now,
       expiresAt: now + this.ttl,
       data: {}
     };
 
-    this.store.set(id, session);
+    this.store.set(this.key(id), session, this.ttl);
     return session;
   }
 
-  get(id: string) {
-    const session = this.store.get(id);
+  get(id: string): GISessionData | null {
+    const session = this.store.get<GISessionData>(this.key(id));
     if (!session) return null;
-
-    if (session.expiresAt < Date.now()) {
-      this.store.delete(id);
+    if (session.expiresAt && session.expiresAt < Date.now()) {
+      this.destroy(id);
       return null;
     }
-
-    session.updatedAt = Date.now();
     return session;
   }
 
-  update(id: string, patch: Record<string, any>) {
+  touch(id: string) {
     const session = this.get(id);
     if (!session) return null;
-
-    session.data = { ...session.data, ...patch };
     session.updatedAt = Date.now();
+    session.expiresAt = Date.now() + this.ttl;
+    this.store.set(this.key(id), session, this.ttl);
     return session;
   }
 
-  attach(req: any, res: any, next: Function) {
-    const sid = req.headers["x-session-id"];
-    let session = sid ? this.get(sid) : null;
+  setData(id: string, key: string, value: any) {
+    const session = this.get(id);
+    if (!session) return null;
+    session.data[key] = value;
+    session.updatedAt = Date.now();
+    this.store.set(this.key(id), session, this.ttl);
+    return session;
+  }
 
-    if (!session) {
-      session = this.create(null, "guest");
-      res.setHeader("x-session-id", session.id);
-    }
-
-    req.session = session;
-    next();
+  getData<T = any>(id: string, key: string): T | null {
+    const session = this.get(id);
+    if (!session) return null;
+    return (session.data[key] as T) ?? null;
   }
 
   destroy(id: string) {
-    this.store.delete(id);
+    this.store.delete(this.key(id));
   }
 }
 
-import crypto from "crypto";
-
-export function createGISessionEngine(config: GISessionConfig = {}) {
-  return new GI_SessionEngine(config);
+export function createGISessionEngine(store: GI_CachePersistEngine, config?: GISessionConfig) {
+  return new GI_SessionEngine(store, config);
 }
-
