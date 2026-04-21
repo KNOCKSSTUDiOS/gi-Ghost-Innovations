@@ -1,13 +1,11 @@
 export function now() {
-  return new Date();
+  return new Date().toISOString();
 }
 
-export function toISO(date = new Date()) {
-  return date.toISOString();
+export function format(date = new Date()) {
+  return new Date(date).toISOString();
 }
 
-export function addDays(date = new Date(), days = 1) {
-  const d = new Date(date);
-  d.setDate(d.getDate() + days);
-  return d;
+export function timestamp() {
+  return Date.now();
 }
