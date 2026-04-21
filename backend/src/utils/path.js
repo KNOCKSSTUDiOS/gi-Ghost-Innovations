@@ -4,14 +4,10 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-export function root(...segments) {
-  return path.join(__dirname, "..", "..", ...segments);
+export function resolveRoot(...segments) {
+  return path.resolve(__dirname, "..", "..", ...segments);
 }
 
-export function src(...segments) {
-  return path.join(__dirname, "..", ...segments);
-}
-
-export function resolveFrom(base, ...segments) {
-  return path.join(base, ...segments);
+export function joinSafe(...segments) {
+  return path.join(...segments).replace(/\\/g, "/");
 }
