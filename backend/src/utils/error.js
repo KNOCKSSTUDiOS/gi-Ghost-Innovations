@@ -1,12 +1,9 @@
-export function createError(message = "Error", status = 500, data = null) {
-  const err = new Error(message);
-  err.status = status;
-  err.data = data;
-  return err;
+export function createError(message = "Unknown error", status = 500) {
+  return { message, status };
 }
 
-export function assert(condition, message = "Assertion failed") {
-  if (!condition) {
-    throw new Error(message);
-  }
+export function throwError(message = "Unknown error", status = 500) {
+  const err = new Error(message);
+  err.status = status;
+  throw err;
 }
