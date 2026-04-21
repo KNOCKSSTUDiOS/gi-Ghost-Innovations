@@ -1,23 +1,36 @@
-export function deepClone(obj) {
-  return JSON.parse(JSON.stringify(obj));
+export function deepMerge(target = {}, source = {}) {
+  const out = { ...target };
+
+  for (const key of Object.keys(source)) {
+    const sv = source[key];
+    const tv = target[key];
+
+    if (isObject(tv) && isObject(sv)) {
+      out[key] = deepMerge(tv, sv);
+    } else {
+      out[key] = sv;
+    }
+  }
+
+  return out;
 }
 
-export function merge(target = {}, source = {}) {
-  const out = { ...target };
-  for (const key in source) {
-    if (
-      typeof source[key] === "object" &&
-      source[key] !== null &&
-      !Array.isArray(source[key])
-    ) {
-      out[key] = merge(out[key] || {}, source[key]);
-    } else {
-      out[key] = source[key];
-    }
+export function omit(obj = {}, keys = []) {
+  const out = {};
+  for (const k of Object.keys(obj)) {
+    if (!keys.includes(k)) out[k] = obj[k];
   }
   return out;
 }
 
-export function isEmpty(obj = {}) {
-  return Object.keys(obj).length === 0;
+export function pick(obj = {}, keys = []) {
+  const out = {};
+  for (const k of keys) {
+    if (obj[k] !== undefined) out[k] = obj[k];
+  }
+  return out;
+}
+
+function isObject(v) {
+  return v && typeof v === "object" && !Array.isArray(v);
 }
