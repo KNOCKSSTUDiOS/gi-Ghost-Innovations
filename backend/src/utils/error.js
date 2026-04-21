@@ -1,31 +1,12 @@
-export class AppError extends Error {
-  constructor(message = "Application Error", status = 500, meta = {}) {
-    super(message);
-    this.status = status;
-    this.meta = meta;
-  }
+export function createError(message = "Error", status = 500, data = null) {
+  const err = new Error(message);
+  err.status = status;
+  err.data = data;
+  return err;
 }
 
-export class NotFoundError extends AppError {
-  constructor(message = "Not Found", meta = {}) {
-    super(message, 404, meta);
-  }
-}
-
-export class BadRequestError extends AppError {
-  constructor(message = "Bad Request", meta = {}) {
-    super(message, 400, meta);
-  }
-}
-
-export class UnauthorizedError extends AppError {
-  constructor(message = "Unauthorized", meta = {}) {
-    super(message, 401, meta);
-  }
-}
-
-export class ForbiddenError extends AppError {
-  constructor(message = "Forbidden", meta = {}) {
-    super(message, 403, meta);
+export function assert(condition, message = "Assertion failed") {
+  if (!condition) {
+    throw new Error(message);
   }
 }
