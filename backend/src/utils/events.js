@@ -17,4 +17,3 @@ export function emit(event, payload = {}) {
 export function once(event, handler) {
   emitter.once(event, handler);
 }
-
