@@ -1,128 +1,79 @@
-import fs from "fs";
-import path from "path";
-
-export interface GIMemoryConfig {
-  file?: string;
-  maxShort?: number;
-  maxLong?: number;
+export interface GIMemoryItem<T = any> {
+  id: string;
+  type: string;
+  key: string;
+  value: T;
+  createdAt: number;
+  updatedAt: number;
+  tags: string[];
 }
 
-export interface GIMemoryItem {
-  id: string;
-  type: "short" | "long";
-  weight: number;
-  timestamp: number;
-  content: any;
+export interface GIMemoryQuery {
+  type?: string;
+  key?: string;
+  tags?: string[];
 }
 
 export class GI_MemoryEngine {
-  short: GIMemoryItem[];
-  long: GIMemoryItem[];
-  file: string;
-  maxShort: number;
-  maxLong: number;
+  private items: Map<string, GIMemoryItem<any>>;
 
-  constructor(config: GIMemoryConfig = {}) {
-    this.file = config.file || path.join(process.cwd(), "gi-memory.json");
-    this.maxShort = config.maxShort || 50;
-    this.maxLong = config.maxLong || 500;
-
-    const loaded = this.load();
-    this.short = loaded.short;
-    this.long = loaded.long;
+  constructor() {
+    this.items = new Map();
   }
 
-  load() {
-    try {
-      if (!fs.existsSync(this.file)) {
-        return { short: [], long: [] };
+  private makeId(type: string, key: string) {
+    return `${type}:${key}`;
+  }
+
+  set<T = any>(type: string, key: string, value: T, tags: string[] = []): GIMemoryItem<T> {
+    const id = this.makeId(type, key);
+    const now = Date.now();
+
+    const existing = this.items.get(id);
+    const item: GIMemoryItem<T> = {
+      id,
+      type,
+      key,
+      value,
+      tags: tags.length ? tags : existing?.tags || [],
+      createdAt: existing?.createdAt ?? now,
+      updatedAt: now
+    };
+
+    this.items.set(id, item);
+    return item;
+  }
+
+  get<T = any>(type: string, key: string): GIMemoryItem<T> | null {
+    return (this.items.get(this.makeId(type, key)) as GIMemoryItem<T>) ?? null;
+  }
+
+  delete(type: string, key: string) {
+    this.items.delete(this.makeId(type, key));
+  }
+
+  query<T = any>(q: GIMemoryQuery): GIMemoryItem<T>[] {
+    const out: GIMemoryItem<T>[] = [];
+    for (const item of this.items.values()) {
+      if (q.type && item.type !== q.type) continue;
+      if (q.key && item.key !== q.key) continue;
+      if (q.tags && q.tags.length) {
+        if (!q.tags.every(t => item.tags.includes(t))) continue;
       }
-      const raw = fs.readFileSync(this.file, "utf8");
-      return JSON.parse(raw);
-    } catch {
-      return { short: [], long: [] };
+      out.push(item as GIMemoryItem<T>);
     }
+    return out;
   }
 
-  save() {
-    const data = {
-      short: this.short,
-      long: this.long
-    };
-    fs.writeFileSync(this.file, JSON.stringify(data, null, 2));
+  all() {
+    return [...this.items.values()];
   }
 
-  addShort(content: any, weight: number = 1) {
-    const item: GIMemoryItem = {
-      id: crypto.randomUUID(),
-      type: "short",
-      weight,
-      timestamp: Date.now(),
-      content
-    };
-
-    this.short.push(item);
-    if (this.short.length > this.maxShort) {
-      this.short.shift();
-    }
-
-    this.save();
-    return item;
-  }
-
-  addLong(content: any, weight: number = 1) {
-    const item: GIMemoryItem = {
-      id: crypto.randomUUID(),
-      type: "long",
-      weight,
-      timestamp: Date.now(),
-      content
-    };
-
-    this.long.push(item);
-    if (this.long.length > this.maxLong) {
-      this.long.shift();
-    }
-
-    this.save();
-    return item;
-  }
-
-  recall(query: string) {
-    const q = query.toLowerCase();
-
-    const all = [...this.short, ...this.long];
-
-    const scored = all
-      .map(item => {
-        const text = JSON.stringify(item.content).toLowerCase();
-        const match = text.includes(q) ? 1 : 0;
-        return {
-          item,
-          score: match * item.weight
-        };
-      })
-      .filter(x => x.score > 0)
-      .sort((a, b) => b.score - a.score)
-      .map(x => x.item);
-
-    return scored;
-  }
-
-  evolve() {
-    for (const item of this.short) {
-      item.weight *= 0.98;
-    }
-    for (const item of this.long) {
-      item.weight *= 0.995;
-    }
-    this.save();
+  clear() {
+    this.items.clear();
   }
 }
 
-import crypto from "crypto";
-
-export function createGIMemoryEngine(config: GIMemoryConfig = {}) {
-  return new GI_MemoryEngine(config);
+export function createGIMemoryEngine() {
+  return new GI_MemoryEngine();
 }
-
