@@ -2,9 +2,15 @@ import http from "http";
 import { bootstrapGI } from "./bootstrap/gi-bootstrap";
 import { createGIRouter } from "./router/gi-router";
 import { registerGISystemRoutes } from "./router/gi-system-routes";
+import { registerGIAdminRoutes } from "./router/gi-admin-routes";
 
 const engine = bootstrapGI();
 const router = createGIRouter();
+
+// --------------------------------------
+// REGISTER ADMIN ROUTES
+// --------------------------------------
+registerGIAdminRoutes(router);
 
 // --------------------------------------
 // REGISTER SYSTEM ROUTES
@@ -21,7 +27,7 @@ router.register("GET", "/health", async (req, res, engine) => {
 
 router.register("GET", "/", async (req, res, engine) => {
   res.writeHead(200, { "Content-Type": "text/plain" });
-  res.end("GI Engine Server Running with Router + System Routes");
+  res.end("GI Engine Server Running with Router + System Routes + Admin Routes");
 });
 
 // --------------------------------------
