@@ -1,11 +1,16 @@
-export function isString(v) {
-  return typeof v === "string";
+export function isEmail(str = "") {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(str);
 }
 
-export function isNumber(v) {
-  return typeof v === "number" && !isNaN(v);
+export function isURL(str = "") {
+  try {
+    new URL(str);
+    return true;
+  } catch {
+    return false;
+  }
 }
 
-export function isEmail(v = "") {
-  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v);
+export function isNumber(value) {
+  return typeof value === "number" && !isNaN(value);
 }
