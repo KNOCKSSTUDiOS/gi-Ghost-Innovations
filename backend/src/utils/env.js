@@ -1,17 +1,17 @@
-export function getEnv(key = "", fallback = null) {
+export function get(key = "", fallback = null) {
   return process.env[key] ?? fallback;
 }
 
-export function requireEnv(key = "") {
+export function required(key = "") {
   const value = process.env[key];
-  if (!value) {
+  if (value === undefined) {
     throw new Error(`Missing required environment variable: ${key}`);
   }
   return value;
 }
 
 export function bool(key = "", fallback = false) {
-  const v = process.env[key];
-  if (v === undefined) return fallback;
-  return v === "1" || v.toLowerCase() === "true";
+  const value = process.env[key];
+  if (value === undefined) return fallback;
+  return value === "true" || value === "1";
 }
