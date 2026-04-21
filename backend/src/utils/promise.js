@@ -1,11 +1,11 @@
-export function sleep(ms = 1000) {
+export function wait(ms = 0) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
 export function timeout(promise, ms = 5000) {
   let timer;
   const timeoutPromise = new Promise((_, reject) => {
-    timer = setTimeout(() => reject(new Error("Operation timed out")), ms);
+    timer = setTimeout(() => reject(new Error("Timeout exceeded")), ms);
   });
 
   return Promise.race([
