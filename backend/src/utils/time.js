@@ -1,5 +1,5 @@
-export function sleep(ms = 0) {
-  return new Promise(resolve => setTimeout(resolve, ms));
+export function ms(n = 1) {
+  return n;
 }
 
 export function seconds(n = 1) {
