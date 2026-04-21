@@ -1,12 +1,18 @@
 import http from "http";
 import { bootstrapGI } from "./bootstrap/gi-bootstrap";
 import { createGIRouter } from "./router/gi-router";
+import { registerGISystemRoutes } from "./router/gi-system-routes";
 
 const engine = bootstrapGI();
 const router = createGIRouter();
 
 // --------------------------------------
-// REGISTER ROUTES
+// REGISTER SYSTEM ROUTES
+// --------------------------------------
+registerGISystemRoutes(router);
+
+// --------------------------------------
+// REGISTER CUSTOM ROUTES
 // --------------------------------------
 router.register("GET", "/health", async (req, res, engine) => {
   res.writeHead(200, { "Content-Type": "application/json" });
@@ -15,7 +21,7 @@ router.register("GET", "/health", async (req, res, engine) => {
 
 router.register("GET", "/", async (req, res, engine) => {
   res.writeHead(200, { "Content-Type": "text/plain" });
-  res.end("GI Engine Server Running with Router");
+  res.end("GI Engine Server Running with Router + System Routes");
 });
 
 // --------------------------------------
