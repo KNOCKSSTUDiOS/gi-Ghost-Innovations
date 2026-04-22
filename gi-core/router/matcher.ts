@@ -1,41 +1,41 @@
-export class RouteMatcher {
-  match(method: string, path: string, routeMethod: string, routePath: string) {
-    if (method !== routeMethod) return false;
+import { RouteDefinition } from "./route";
+import { RouteMatcher } from "./matcher";
+import { MiddlewareStack } from "../middleware/stack";
+import { HttpContext } from "../http/context";
 
-    if (routePath === path) return true;
+export class AdvancedRouter {
+  private routes: RouteDefinition[] = [];
+  private matcher = new RouteMatcher();
 
-    const routeParts = routePath.split("/").filter(Boolean);
-    const pathParts = path.split("/").filter(Boolean);
-
-    if (routeParts.length !== pathParts.length) return false;
-
-    for (let i = 0; i < routeParts.length; i++) {
-      const rp = routeParts[i];
-      const pp = pathParts[i];
-
-      if (rp.startsWith(":")) continue;
-      if (rp !== pp) return false;
-    }
-
-    return true;
+  register(def: RouteDefinition) {
+    this.routes.push(def);
   }
 
-  extractParams(routePath: string, path: string) {
-    const params: Record<string, string> = {};
+  async handle(ctx: HttpContext) {
+    const { method, path } = ctx.req;
 
-    const routeParts = routePath.split("/").filter(Boolean);
-    const pathParts = path.split("/").filter(Boolean);
+    for (const route of this.routes) {
+      const matched = this.matcher.match(method, path, route.method, route.path);
+      if (!matched) continue;
 
-    for (let i = 0; i < routeParts.length; i++) {
-      const rp = routeParts[i];
-      const pp = pathParts[i];
+      const params = this.matcher.extractParams(route.path, path);
+      ctx.set("params", params);
 
-      if (rp.startsWith(":")) {
-        const key = rp.slice(1);
-        params[key] = pp;
+      const stack = new MiddlewareStack();
+
+      if (route.middlewares) {
+        for (const mw of route.middlewares) {
+          stack.use(mw as any);
+        }
       }
+
+      await stack.run(ctx, async () => {
+        await route.handler(ctx);
+      });
+
+      return;
     }
 
-    return params;
+    ctx.res.status(404).text("Not Found");
   }
 }
