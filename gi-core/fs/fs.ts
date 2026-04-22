@@ -1,43 +1,26 @@
-import * as fs from "fs";
-import * as path from "path";
+import { promises as fs } from "fs";
+import { dirname } from "path";
 
 export class FileSystem {
-  read(filePath: string): string {
-    return fs.readFileSync(filePath, "utf8");
+  async read(path: string): Promise<string> {
+    return fs.readFile(path, "utf8");
   }
 
-  readAsync(filePath: string): Promise<string> {
-    return fs.promises.readFile(filePath, "utf8");
+  async write(path: string, data: string): Promise<void> {
+    await this.ensureDir(dirname(path));
+    await fs.writeFile(path, data, "utf8");
   }
 
-  write(filePath: string, data: string) {
-    fs.writeFileSync(filePath, data, "utf8");
-  }
-
-  writeAsync(filePath: string, data: string): Promise<void> {
-    return fs.promises.writeFile(filePath, data, "utf8");
-  }
-
-  exists(filePath: string): boolean {
-    return fs.existsSync(filePath);
-  }
-
-  ensureDir(dirPath: string) {
-    if (!fs.existsSync(dirPath)) {
-      fs.mkdirSync(dirPath, { recursive: true });
+  async exists(path: string): Promise<boolean> {
+    try {
+      await fs.access(path);
+      return true;
+    } catch {
+      return false;
     }
   }
 
-  join(...parts: string[]): string {
-    return path.join(...parts);
-  }
-
-  list(dirPath: string): string[] {
-    return fs.readdirSync(dirPath);
-  }
-
-  listAsync(dirPath: string): Promise<string[]> {
-    return fs.promises.readdir(dirPath);
+  async ensureDir(path: string): Promise<void> {
+    await fs.mkdir(path, { recursive: true });
   }
 }
-
